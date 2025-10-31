@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HLA — Higher-order Linear Attention</title>
+
+  <!-- Meta: SEO / Academic -->
+  <meta name="description" content="Higher‑order Linear Attention (HLA) is a causal, streaming attention mechanism that realizes higher‑order interactions via compact prefix sufficient statistics with exact masked streaming identities and scan‑parallel training.">
+  <meta name="keywords" content="Higher-order Linear Attention, HLA, linear attention, Higher, causal masking, streaming, associative scans, fast weights, SSMs, GPU-friendly training">
+  <meta name="citation_title" content="Higher-order Linear Attention">
+  <meta name="citation_author" content="Yifan Zhang">
+  <meta name="citation_author" content="Zhen Qin">
+  <meta name="citation_author" content="Quanquan Gu">
+  <meta name="citation_publication_date" content="2025/10/30">
+  <meta name="citation_pdf_url" content="https://yifanzhang-pro.github.io/HLA/HLA.pdf">
+  <meta property="og:title" content="Higher-order Linear Attention (HLA)"/>
+  <meta property="og:description" content="Causal higher attention with streaming updates, exact masked identities, and associative scans for parallel training."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://yifanzhang-pro.github.io/HLA/"/>
+  <link rel="canonical" href="https://yifanzhang-pro.github.io/HLA/">
+  <link rel="icon" href="https://placehold.co/32x32/0A2540/FFFFFF?text=HLA" type="image/x-icon">
+
+  <!-- Fonts & CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- MathJax -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        macros: { bm: ["\\mathbf{#1}", 1] }
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <!-- Theme -->
+  <style>
+    :root{
+      --primary-color:#0A2540;    /* Deep research navy */
+      --accent-color:#00C2FF;     /* Cyan accent */
+      --main-bg:#FFFFFF;
+      --content-bg:#F6F8FA;
+      --text-main:#2D2D2D;
+      --text-on-primary:#FFFFFF;
+      --link-color:var(--primary-color);
+      --link-hover-color:#143E73;
+      --primary-color-rgb:10,37,64;
+      --link-color-rgb:10,37,64;
+      --border-color:#e5e7eb;
+      --shadow-color:rgba(0,0,0,0.1);
+    }
+
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text-main); background:var(--main-bg);
+      display:flex; flex-direction:column; min-height:100vh;
+      text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Navbar */
+    .navbar{
+      background:rgba(var(--primary-color-rgb),0.92);
+      backdrop-filter:blur(10px);
+      box-shadow:0 2px 5px var(--shadow-color);
+      position:sticky; top:0; z-index:100;
+    }
+    .navbar .navbar-item, .navbar .navbar-link{ color:var(--text-on-primary); font-weight:500; }
+    .navbar a.navbar-item:hover, .navbar .navbar-link:hover, .navbar-item.is-active{ color:var(--accent-color)!important; background:transparent!important; }
+    .navbar-burger{ color:var(--text-on-primary); }
+
+    /* Hero */
+    .hero{ background:linear-gradient(180deg, #0A2540 0%, #0e3055 100%); color:var(--text-on-primary); }
+    .hero .title{
+      font-family:'Space Grotesk', sans-serif; font-weight:700; color:var(--text-on-primary);
+      font-size:3.0rem; line-height:1.1;
+    }
+    .hero .subtitle.is-hero-subtitle{
+      color:rgba(255,255,255,0.92); font-size:1.18rem; max-width:980px; margin:1.25rem auto 2rem auto;
+    }
+    .hero .subtitle .highlight{ color:var(--accent-color); font-weight:600; }
+
+    .project-links a{ color:var(--text-on-primary); font-size:1.45rem; margin:0 0.6rem; transition:transform .25s ease, color .25s ease; }
+    .project-links a:hover{ color:var(--accent-color); transform:translateY(-2px); }
+
+    /* Sections */
+    .section.content-section{ padding:4.5rem 1.25rem; border-bottom:1px solid var(--border-color); }
+    .section.content-section:nth-child(even){ background:var(--content-bg); }
+    .section-title{
+      font-family:'Space Grotesk', sans-serif; font-weight:700; color:var(--primary-color);
+      margin-bottom:2.2rem;
+    }
+    .content{ max-width:1000px; margin:0 auto; line-height:1.8; font-size:1.06rem; }
+    .content a{ color:var(--link-color); font-weight:500; text-decoration:none; border-bottom:2px solid rgba(var(--link-color-rgb),.2); }
+    .content a:hover{ color:var(--link-hover-color); border-bottom-color:var(--link-hover-color); }
+    .content img{ display:block; margin:1.75rem auto; max-width:100%; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.08); }
+
+    /* Code & Pre */
+    .content pre{
+      background:#0f172a; color:#cbd5e1; border-radius:8px; padding:1.1em 1.2em;
+      overflow:auto; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04);
+      font-size:0.95rem;
+    }
+    code{ background:#f2f4f7; color:#1f2937; padding:0.18em 0.38em; border-radius:4px; font-size:85%; }
+    pre code{ background:transparent; color:inherit; padding:0; font-size:inherit; }
+
+    /* Badges / pills */
+    .pill{ display:inline-block; padding:.35rem .6rem; border-radius:999px; font-size:.82rem; background:#E6F7FF; color:#0A2540; margin:.15rem .25rem; border:1px solid #C8ECFF; }
+
+    /* Footer */
+    .footer{
+      background:var(--primary-color); color:var(--text-on-primary);
+      padding:2rem 1.5rem; border-top:3px solid var(--accent-color); margin-top:auto;
+    }
+    .footer a{ color:var(--accent-color); font-weight:500; }
+    .footer a:hover{ color:#ffffff; }
+
+    /* Utility */
+    .mini-caption{ display:block; margin-top:.35rem; color:#6b7280; }
+    .tight{ margin-top:0.5rem; margin-bottom:0.75rem; }
+  </style>
+
+  <!-- Structured data (minimal) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"ScholarlyArticle",
+    "name":"Higher-order Linear Attention",
+    "url":"https://yifanzhang-pro.github.io/HLA/",
+    "datePublished":"2025-10-30",
+    "author":[{"@type":"Person","name":"Yifan Zhang"},{"@type":"Person","name":"Zhen Qin"},{"@type":"Person","name":"Quanquan Gu"}],
+    "description":"Causal Higher attention with streaming updates, exact masked identities, and associative scans for parallel training."
+  }
+  </script>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <a class="navbar-item is-size-5 has-text-weight-bold" href="#">HLA</a>
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div id="navbarMenu" class="navbar-menu">
+        <div class="navbar-end">
+          <a href="#abstract" class="navbar-item">Abstract</a>
+          <a href="#hla2" class="navbar-item">Second‑Order</a>
+          <a href="#hla3" class="navbar-item">Third‑Order</a>
+          <a href="#citation" class="navbar-item">Citation</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero is-medium">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title">Higher-order Linear Attention</h1>
+        <h2 class="subtitle is-hero-subtitle">
+          A <span class="highlight">causal, streaming</span> attention mechanism that realizes
+          <span class="highlight">higher‑order interactions</span> via compact prefix statistics, 
+          with exact masked identities and <span class="highlight">associative scans</span> enabling parallel training that matches recurrent computations.
+        </h2>
+        <h3 class="subtitle is-5" style="color:rgba(255,255,255,0.9); margin-top:1rem;">
+          <a href="https://yifzhang.com" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline; text-underline-offset:2px;">Yifan Zhang</a>
+          &nbsp;&middot;&nbsp; Zhen Qin &nbsp;&middot;&nbsp;  <a href="https://web.cs.ucla.edu/~qgu" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline; text-underline-offset:2px;">Quanquan Gu</a>
+        </h3>
+        <h4 class="subtitle is-6" style="color:rgba(255,255,255,0.8); margin-top:-0.35rem;">
+          Princeton University &nbsp;•&nbsp; UCLA &nbsp;•&nbsp; October 30, 2025
+        </h4>
+        <div class="project-links" style="margin-top:1rem;">
+          <a href="HLA.pdf" target="_blank" rel="noopener" aria-label="Paper PDF"><i class="fas fa-file-pdf"></i></a>
+          <!-- If an arXiv ID becomes available, update the href below -->
+          <a href="#citation" aria-label="arXiv (coming soon)"><i class="fas fa-graduation-cap"></i></a>
+          <a href="https://github.com/yifanzhang-pro/HLA" target="_blank" rel="noopener" aria-label="GitHub Repository"><i class="fab fa-github"></i></a>
+          <a href="#citation" aria-label="Citation"><i class="fas fa-quote-right"></i></a>
+        </div>
+        <div style="margin-top:1.25rem;">
+          <span class="pill">Streaming</span>
+          <span class="pill">Causal Mask</span>
+          <span class="pill">Second‑order</span>
+          <span class="pill">Third‑order</span>
+          <span class="pill">Associative Scans</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ABSTRACT -->
+    <section id="abstract" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Abstract</h2>
+        <div class="content has-text-justified" style="max-width:880px;">
+          <p>
+            The quadratic cost of scaled dot‑product attention limits long‑context inference. Linear‑time attentions and state space models provide scalable alternatives but are often restricted to first‑order or kernel‑based approximations. We introduce <strong>Higher-order Linear Attention</strong> (HLA), a causal, streaming mechanism that realizes higher‑order interactions via compact prefix sufficient statistics. In the second‑order case, HLA maintains an $O(d^2)$ state per head and computes per‑token outputs in $O(d^2)$ time without materializing any $n{\times}n$ matrices. We derive exact masked streaming identities (strict autoregressive causality), and a chunk‑parallel training scheme based on <em>associative scans</em> that exactly reproduces serial activations. We further outline masked third‑order HLA and decay‑aware variants. HLA combines attention‑style data‑dependent mixing with the efficiency of modern recurrent architectures.
+          </p>
+          <p class="has-text-centered" style="margin-top:1.25rem;">
+            <a class="button is-link is-light" href="https://github.com/yifanzhang-pro/HLA" target="_blank" rel="noopener">
+              <span class="icon"><i class="fab fa-github"></i></span><span>Project Repository</span>
+            </a>
+            <a class="button is-primary" style="background:var(--primary-color);" href="HLA.pdf" target="_blank" rel="noopener">
+              <span class="icon"><i class="fas fa-file-pdf"></i></span><span>Read the Paper</span>
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECOND-ORDER -->
+    <section id="hla2" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Second‑Order HLA: Streaming Mechanism</h2>
+        <div class="content">
+          <p class="has-text-centered">
+            <img src="docs/HLA2.png" alt="HLA: prefix summaries drive higher‑order attention without n×n matrices.">
+            <span class="is-size-7"><strong>Figure:</strong> Prefix summaries $S^K$, $C^{QV}$, and $M^Q$ (plus masked cross‑summaries) enable streaming updates.</span>
+          </p>
+
+          <h4 class="title is-5 tight">Prefix summaries (per head)</h4>
+          <pre><code>S_t^K   = \sum_{i \le t} \bm{k}_i \bm{k}_i^\top     \in \mathbb{R}^{d \times d}
+C_t^{QV}= \sum_{i \le t} \bm{q}_i \bm{v}_i^\top     \in \mathbb{R}^{d \times d_v}
+M_t^Q   = \sum_{i \le t} \bm{q}_i                   \in \mathbb{R}^d</code></pre>
+
+          <h4 class="title is-5 tight">Default (unnormalized) output</h4>
+          <p class="has-text-centered">
+            $$\mathbf{o}_t \;=\; \bm{q}_t^\top S_t^K C_t^{QV}.$$
+          </p>
+
+          <h4 class="title is-5 tight">Auxiliary normalized variant (optional)</h4>
+          <p class="has-text-centered">
+            $$\mathbf{o}_t \;=\; \frac{\bm{q}_t^\top S_t^K C_t^{QV}}{\bm{q}_t^\top S_t^K M_t^Q + \varepsilon}.$$
+          </p>
+
+          <p>
+            When $S_t^K=\mathbf{I}$ the normalized form reduces to a linear‑attention kernel with $K(\bm{q}_t,\bm{q}_i)=\bm{q}_t^\top\bm{q}_i$. In general, $S_t^K=\sum_{i\le t}\bm{k}_i\bm{k}_i^\top$ induces a <em>data‑adaptive second‑order metric</em> on query space, strictly enriching first‑order mechanisms while retaining streaming updates.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- MASKING -->
+    <section id="masking" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Strict Causality via Masked Streaming Identities</h2>
+        <div class="content">
+          <p>
+            Let $L$ be the binary causal mask (ones on and below the diagonal). To impose strict autoregressive causality, augment with cross‑summaries
+            $$G_t=\sum_{i\le t}\left(\bm{k}_i\bm{k}_i^\top\right) C_{i-1}^{QV},\qquad
+              H_t=\sum_{i\le t}\left(\bm{k}_i\bm{k}_i^\top\right) M_{i-1}^{Q}.$$
+          </p>
+          <h4 class="title is-5 tight">Masked identities (second‑order)</h4>
+          <p class="has-text-centered">
+            $$\mathbf{o}_t \;=\; \bm{q}_t^\top\!\left(S_t^K C_t^{QV} - G_t\right) \quad\text{(default, unnormalized)}$$
+            $$\mathbf{o}_t \;=\; \frac{\bm{q}_t^\top\!\left(S_t^K C_t^{QV}-G_t\right)}
+            {\bm{q}_t^\top\!\left(S_t^K M_t^{Q}-H_t\right) + \varepsilon} \quad\text{(auxiliary normalized)}.$$
+          </p>
+
+          <h4 class="title is-5 tight">Online updates (per token)</h4>
+<pre><code>S_t^K = S_{t-1}^K + \bm{k}_t \bm{k}_t^\top
+C_t^{QV} = C_{t-1}^{QV} + \bm{q}_t \bm{v}_t^\top
+M_t^Q = M_{t-1}^Q + \bm{q}_t
+G_t = G_{t-1} + \bm{k}_t \big(\bm{k}_t^\top C_{t-1}^{QV}\big)
+H_t = H_{t-1} + \bm{k}_t \big(\bm{k}_t^\top M_{t-1}^{Q}\big)</code></pre>
+
+          <h4 class="title is-5 tight">Decay (optional)</h4>
+<pre><code>S_t^K = \gamma S_{t-1}^K + \bm{k}_t \bm{k}_t^\top     (similarly for C^{QV}, M^Q)
+G_t   = \gamma G_{t-1} + \bm{k}_t(\bm{k}_t^\top C_{t-1}^{QV})
+H_t   = \gamma H_{t-1} + \bm{k}_t(\bm{k}_t^\top M_{t-1}^{Q})</code></pre>
+          <span class="mini-caption">Decay controls spectral growth and encourages recency bias while preserving scan‑friendly associativity.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCANS & TRAINING -->
+    <section id="scans" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Associative Scans: Chunk‑Parallel Training</h2>
+        <div class="content">
+          <p>
+            We define an associative operator over segment summaries so that a standard exclusive Blelloch scan produces per‑token <em>prefix</em> states; local inclusions recover the exact serial activations. For the masked second‑order case, use state
+            $\mathcal{S}=(S,C,M,G,H)$ with concatenation
+          </p>
+<pre><code>(S_A,C_A,M_A,G_A,H_A) ⊕ (S_B,C_B,M_B,G_B,H_B)
+= (S_A+S_B, C_A+C_B, M_A+M_B,
+   G_A+G_B + S_B C_A,
+   H_A+H_B + S_B M_A)</code></pre>
+          <p>
+            This semidirect product is associative; decay multiplies left segments by an attenuation $\rho_B=\gamma^{\ell(B)}$ before forming cross‑terms. Reverse‑mode uses the adjoint operator $\oplus^\ast$ with checkpointing at tile boundaries, yielding gradients identical to those of the serial recurrence.
+          </p>
+
+          <h4 class="title is-5 tight">Reference pseudocode (masked, second‑order)</h4>
+<pre><code>// Within-chunk exclusive scan (masked)
+prefixes = scan_exclusive(segments, ⊕)   // O(log w) span
+for each token t in parallel:
+  // Inclusive state from local delta + prefix
+  S_t = γ S_{t-1} + ΔS_t
+  C_t = γ C_{t-1} + ΔC_t
+  M_t = γ M_{t-1} + ΔM_t
+  G_t = γ G_{t-1} + ΔS_t C_{t-1}
+  H_t = γ H_{t-1} + ΔS_t M_{t-1}
+  // Output (unnormalized by default)
+  o_t = q_t^T (S_t C_t - G_t)
+  // Optional normalization:
+  // o_t /= q_t^T (S_t M_t - H_t) + ε</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- THIRD-ORDER -->
+    <section id="hla3" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Third‑Order HLA</h2>
+        <div class="content">
+          <p>
+            Unmasked third‑order uses $S_t^K=\sum \bm{k}\bm{k}^\top$, $S_t^Q=\sum \bm{q}\bm{q}^\top$, $P_t^{KV}=\sum \bm{k}\bm{v}^\top$, $M_t^{K}=\sum \bm{k}$ with default (unnormalized) output
+          </p>
+          <p class="has-text-centered">
+            $$\mathbf{o}_t^{(3)}=\bm{q}_t^\top S_t^K S_t^Q P_t^{KV}.$$
+          </p>
+          <p>
+            Strict causality adds cross‑summaries $G_t^{(1\!:\!3)}$, $H_t^{(1\!:\!3)}$; the masked numerator is
+          </p>
+          <p class="has-text-centered">
+            $$\text{num}_t^{(3)\mathrm{mask}}=\bm{q}_t^\top\!\Big(S_t^K S_t^Q P_t^{KV}-G^{(1)}_t-G^{(2)}_t-G^{(3)}_t\Big),$$
+          </p>
+          <p>
+            with an analogous denominator replacing $P^{KV}$ by $M^K$. Online updates keep $O(d^2{+}d\,d_v)$‑style costs via mat‑vec/outer‑product forms. An associative scan operator carries the same summaries and cross‑terms with decay‑aware scaling.
+          </p>
+
+          <h4 class="title is-5 tight">Streaming kernel sketch (masked, third‑order)</h4>
+<pre><code>// Core step (per token t; decay γ)
+S^K ← γ S^K + k_t k_t^T
+S^Q ← γ S^Q + q_t q_t^T
+P   ← γ P   + k_t v_t^T
+M^K ← γ M^K + k_t
+
+// Cross-summaries via matvecs
+u1 = S^Q_prev k_t
+G^(1) ← γ G^(1) + k_t (u1^T P_prev)
+H^(1) ← γ H^(1) + k_t (u1^T M_prev)
+
+a2 = S^K_prev q_t
+G^(2) ← γ G^(2) + a2 (q_t^T P_prev)
+H^(2) ← γ H^(2) + a2 (q_t^T M_prev)
+
+a3 = S^K_prev (S^Q_prev k_t)
+G^(3) ← γ G^(3) + a3 v_t^T
+H^(3) ← γ H^(3) + a3
+
+// Output (default)
+y = S^K q_t;  z = S^Q y
+o_t = z^T P - q_t^T(G^(1)+G^(2)+G^(3))
+// Optional normalization by masked denominator</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPLEMENTATION -->
+    <section id="impl" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Implementation &amp; Complexity</h2>
+        <div class="content">
+          <ul>
+            <li><strong>Drop‑in mixer:</strong> replace the standard attention sublayer; keep positional encodings and masking unchanged.</li>
+            <li><strong>Per‑head state (2nd‑order):</strong> $S^K\!\in\!\mathbb{R}^{d\times d}$, $C^{QV}\!\in\!\mathbb{R}^{d\times d_v}$, $M^Q\!\in\!\mathbb{R}^d$ (plus masked $G\!\in\!\mathbb{R}^{d\times d_v}$, $H\!\in\!\mathbb{R}^d$).</li>
+            <li><strong>Per‑token cost (2nd‑order):</strong> $O(d^2{+}d\,d_v)$ dominated by $S^K C^{QV}$ and $S^K M^Q$ (masked cross‑terms via $\bm{k}^\top X$ avoid cubic cost).</li>
+            <li><strong>Multi‑query keys/values:</strong> share $\bm{K},\bm{V}$ across heads to store $S^K$ once per layer; memory $O(d^2{+}h\,d\,d_v)$.</li>
+            <li><strong>Packed symmetric $S^K$:</strong> store the upper triangle to reduce bandwidth without changing the algebra.</li>
+            <li><strong>Training throughput:</strong> within‑chunk exclusive Blelloch scans (span $O(\log w)$); inter‑chunk scans across $B_c$ chunks reuse the same operator.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- CITATION -->
+    <section id="citation" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Citation</h2>
+        <div class="content">
+          <p>If you find this work useful, please cite:</p>
+<pre id="cite-bibtex"><code>@article{zhang2025hla,
+  title   = {Higher-order Linear Attention},
+  author  = {Zhang, Yifan and Qin, Zhen and Gu, Quanquan},
+  year    = {2025},
+  journal = {preprint},
+  note    = {arXiv: to appear},
+  url     = {https://github.com/yifanzhang-pro/HLA}
+}</code></pre>
+          <p>
+            <button id="copy-cite" class="button is-small is-link is-light">
+              <span class="icon"><i class="fas fa-clipboard"></i></span>
+              <span>Copy BibTeX</span>
+            </button>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="content has-text-centered">
+        <p>
+          <a href="#abstract">Abstract</a> &nbsp;&bull;&nbsp;
+          <a href="#hla2">Second‑Order</a> &nbsp;&bull;&nbsp;
+          <a href="#hla3">Third‑Order</a> &nbsp;&bull;&nbsp;
+          <a href="#citation">Citation</a>
+        </p>
+        <p>&copy; 2025 Yifan Zhang. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile navbar toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      const $burgers = Array.from(document.querySelectorAll('.navbar-burger'));
+      $burgers.forEach(el => {
+        el.addEventListener('click', () => {
+          const target = el.dataset.target;
+          const $target = document.getElementById(target);
+          el.classList.toggle('is-active');
+          $target.classList.toggle('is-active');
+        });
+      });
+
+      // Hex → rgb helper and CSS var initialization for early paint consistency
+      function hexToRgb(hex){
+        const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return m ? { r:parseInt(m[1],16), g:parseInt(m[2],16), b:parseInt(m[3],16) } : null;
+      }
+      const root = document.documentElement;
+      const styles = getComputedStyle(root);
+      const p = styles.getPropertyValue('--primary-color').trim();
+      const l = styles.getPropertyValue('--link-color').trim();
+      const prgb = hexToRgb(p), lrgb = hexToRgb(l);
+      if(prgb){ root.style.setProperty('--primary-color-rgb', `${prgb.r}, ${prgb.g}, ${prgb.b}`); }
+      if(lrgb){ root.style.setProperty('--link-color-rgb', `${lrgb.r}, ${lrgb.g}, ${lrgb.b}`); }
+
+      // Copy BibTeX
+      const btn = document.getElementById('copy-cite');
+      const pre = document.getElementById('cite-bibtex');
+      if(btn && pre){
+        btn.addEventListener('click', async () => {
+          const text = pre.innerText;
+          try{
+            await navigator.clipboard.writeText(text);
+            btn.classList.add('is-success');
+            btn.classList.remove('is-link','is-light');
+            btn.innerHTML = '<span class="icon"><i class="fas fa-check"></i></span><span>Copied</span>';
+            setTimeout(() => {
+              btn.classList.remove('is-success');
+              btn.classList.add('is-link','is-light');
+              btn.innerHTML = '<span class="icon"><i class="fas fa-clipboard"></i></span><span>Copy BibTeX</span>';
+            }, 1600);
+          }catch(e){
+            // Fallback select
+            const range = document.createRange();
+            range.selectNode(pre);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            try{ document.execCommand('copy'); }catch(_){}
+            sel.removeAllRanges();
+          }
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>
+
