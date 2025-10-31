@@ -327,7 +327,7 @@ for each token t in parallel:
         <h2 class="title is-3 has-text-centered section-title">Third‑Order HLA</h2>
         <div class="content">
           <p>
-            Unmasked third‑order uses $S_t^K=\sum \bm{k}\bm{k}^\top$, $S_t^Q=\sum \bm{q}\bm{q}^\top$, $P_t^{KV}=\sum \bm{k}\bm{v}^\top$, $M_t^{K}=\sum \bm{k}$ with default (unnormalized) output
+            Unmasked third‑order uses $S_t^K=\sum \bm{k}\bm{k}^\top$, $S_t^Q=\sum \bm{q}\bm{q}^\top$, $P_t^{KV}=\sum \bm{k}\bm{v}^\top$, $m_t^{K}=\sum \bm{k}$ with default (unnormalized) output
           </p>
           <p class="has-text-centered">
             $$\mathbf{o}_t^{(3)}=\bm{q}_t^\top S_t^K S_t^Q P_t^{KV}.$$
@@ -339,7 +339,7 @@ for each token t in parallel:
             $$\text{num}_t^{(3)\mathrm{mask}}=\bm{q}_t^\top\Big(S_t^K S_t^Q P_t^{KV}-G^{(1)}_t-G^{(2)}_t-G^{(3)}_t\Big),$$
           </p>
           <p>
-            with an analogous denominator replacing $P^{KV}$ by $M^K$. Online updates keep $O(d^2{+}d\,d_v)$‑style costs via mat‑vec/outer‑product forms. An associative scan operator carries the same summaries and cross‑terms with decay‑aware scaling.
+            with an analogous denominator replacing $P^{KV}$ by $m^K$. Online updates keep $O(d^2{+}d\,d_v)$‑style costs via mat‑vec/outer‑product forms. An associative scan operator carries the same summaries and cross‑terms with decay‑aware scaling.
           </p>
 
           <h4 class="title is-5 tight">Streaming kernel sketch (masked, third‑order)</h4>
@@ -377,7 +377,7 @@ o_t = z^T P - q_t^T(G^(1)+G^(2)+G^(3))
         <div class="content">
           <ul>
             <li><strong>Drop‑in mixer:</strong> replace the standard attention sublayer; keep positional encodings and masking unchanged.</li>
-            <li><strong>Per‑head state (2nd‑order):</strong> $S^K\in\mathbb{R}^{d\times d}$, $C^{QV}\in\mathbb{R}^{d\times d_v}$, $M^Q\in\mathbb{R}^d$ (plus masked $G\in\mathbb{R}^{d\times d_v}$, $H\in\mathbb{R}^d$).</li>
+            <li><strong>Per‑head state (2nd‑order):</strong> $S^K\in\mathbb{R}^{d\times d}$, $C^{QV}\in\mathbb{R}^{d\times d_v}$, $m^Q\in\mathbb{R}^d$ (plus masked $G\in\mathbb{R}^{d\times d_v}$, $H\in\mathbb{R}^d$).</li>
             <li><strong>Per‑token cost (2nd‑order):</strong> $O(d^2{+}d\,d_v)$ dominated by $S^K C^{QV}$ and $S^K M^Q$ (masked cross‑terms via $\bm{k}^\top X$ avoid cubic cost).</li>
             <li><strong>Multi‑query keys/values:</strong> share $\bm{K},\bm{V}$ across heads to store $S^K$ once per layer; memory $O(d^2{+}h\,d\,d_v)$.</li>
             <li><strong>Packed symmetric $S^K$:</strong> store the upper triangle to reduce bandwidth without changing the algebra.</li>
