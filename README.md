@@ -1,7 +1,8 @@
 # HLA: Higher-order Linear Attention
 
+[![arXiv](https://img.shields.io/badge/arXiv-2510.27258-b31b1b.svg)](https://arxiv.org/abs/2510.27258) 
 [![Website](https://img.shields.io/badge/Project-Website-blue)](https://yifanzhang-pro.github.io/HLA) 
-[![License: CC-BY](https://img.shields.io/badge/License-CC_BY_4.0-yellow.svg)](https://creativecommons.org/licenses/by/4.0)
+[![License: CC-BY](https://img.shields.io/badge/License-CC_BY_4.0-yellow.svg)](https://creativecommons.org/licenses/by/4.0) 
 
 ### Higher-order Linear Attention
 
@@ -17,7 +18,7 @@ The quadratic cost of scaled dot-product attention is a central obstacle to scal
 @article{zhang2025higher,
    title   = {Higher-order Linear Attention},
    author  = {Zhang, Yifan and Qin, Zhen and Gu, Quanquan},
-   journal = {arXiv preprint arXiv:TBD},
+   journal = {arXiv preprint arXiv:2510.27258},
    year    = {2025}
 }
 ```
