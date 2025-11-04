@@ -6,7 +6,7 @@
 
 ### Higher-order Linear Attention
 
-A causal, streaming attention mechanism that realizes higher‑order interactions via compact prefix statistics, with exact masked identities and associative scans enabling parallel training that matches recurrent computations. 
+A causal, streaming linear attention mechanism that realizes higher‑order interactions via compact prefix statistics, with exact masked identities and associative scans enabling parallel training that matches recurrent computations. 
 
 **Authors**: [Yifan Zhang](https://yifzhang.com), [Zhen Qin](https://github.com/Doraemonzzz), [Quanquan Gu](https://web.cs.ucla.edu/~qgu/) 
 
