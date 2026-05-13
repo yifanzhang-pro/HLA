@@ -102,6 +102,9 @@
     .content a{ color:var(--link-color); font-weight:500; text-decoration:none; border-bottom:2px solid rgba(var(--link-color-rgb),.2); }
     .content a:hover{ color:var(--link-hover-color); border-bottom-color:var(--link-hover-color); }
     .content img{ display:block; margin:1.75rem auto; max-width:100%; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.08); }
+    .content figure.hla-overview{ margin:0 auto; max-width:1100px; }
+    .content figure.hla-overview img{ height:auto; margin-bottom:0.85rem; }
+    .content figure.hla-overview figcaption{ color:#4b5563; line-height:1.6; max-width:900px; margin:0 auto; }
 
     /* Code & Pre */
     .content pre{
@@ -157,6 +160,7 @@
       <div id="navbarMenu" class="navbar-menu">
         <div class="navbar-end">
           <a href="#abstract" class="navbar-item">Abstract</a>
+          <a href="#overview" class="navbar-item">Overview</a>
           <a href="#hla2" class="navbar-item">Second‑Order</a>
           <a href="#hla3" class="navbar-item">Third‑Order</a>
           <a href="#citation" class="navbar-item">Citation</a>
@@ -218,6 +222,21 @@
               <span class="icon"><i class="fas fa-file-pdf"></i></span><span>Read the Paper</span>
             </a>
           </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- OVERVIEW FIGURE -->
+    <section id="overview" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Three Equivalent Views of HLA</h2>
+        <div class="content has-text-centered">
+          <figure class="hla-overview">
+            <img src="docs/HLA-plot.png" width="1452" height="1818" loading="lazy" alt="Three equivalent views of second-order HLA: recurrent causal scan, fully parallel masked tensor attention, and chunk-wise associative scan.">
+            <figcaption class="is-size-7">
+              Figure: The same second‑order HLA computation can be expressed as a recurrent causal scan, a fully parallel masked tensor attention form, or a chunk‑wise associative scan with a semidirect product over summaries.
+            </figcaption>
+          </figure>
         </div>
       </div>
     </section>
@@ -417,6 +436,7 @@ o_t = z^T P - q_t^T(G^(1)+G^(2)+G^(3))
       <div class="content has-text-centered">
         <p>
           <a href="#abstract">Abstract</a> &nbsp;&bull;&nbsp;
+          <a href="#overview">Overview</a> &nbsp;&bull;&nbsp;
           <a href="#hla2">Second‑Order</a> &nbsp;&bull;&nbsp;
           <a href="#hla3">Third‑Order</a> &nbsp;&bull;&nbsp;
           <a href="#citation">Citation</a> &nbsp;&bull;&nbsp;
