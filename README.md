@@ -10,7 +10,7 @@ A causal, streaming linear attention mechanism that realizes higher‑order inte
 
 **Authors**: [Yifan Zhang](https://yifzhang.com), [Zhen Qin](https://github.com/Doraemonzzz), [Mengdi Wang](http://mwang.princeton.edu), [Quanquan Gu](https://web.cs.ucla.edu/~qgu/) 
 
-[[Webpage](https://yifanzhang-pro.github.io/HLA)] [[Huggingface](https://huggingface.co/papers/2510.27258)] 
+[[Webpage](https://yifanzhang-pro.github.io/HLA)] 
 
 ## Abstract
 
