@@ -102,7 +102,7 @@
     .content a{ color:var(--link-color); font-weight:500; text-decoration:none; border-bottom:2px solid rgba(var(--link-color-rgb),.2); }
     .content a:hover{ color:var(--link-hover-color); border-bottom-color:var(--link-hover-color); }
     .content img{ display:block; margin:1.75rem auto; max-width:100%; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.08); }
-    .content figure.hla-overview{ margin:0 auto; max-width:1100px; }
+    .content figure.hla-overview{ margin:0 auto; max-width:1000px; }
     .content figure.hla-overview img{ height:auto; margin-bottom:0.85rem; }
     .content figure.hla-overview figcaption{ color:#4b5563; line-height:1.6; max-width:900px; margin:0 auto; }
 
@@ -232,7 +232,7 @@
         <h2 class="title is-3 has-text-centered section-title">Three Equivalent Views of HLA</h2>
         <div class="content has-text-centered">
           <figure class="hla-overview">
-            <img src="docs/HLA-plot.png" width="1452" height="1818" loading="lazy" alt="Three equivalent views of second-order HLA: recurrent causal scan, fully parallel masked tensor attention, and chunk-wise associative scan.">
+            <img src="docs/HLA-plot.png" width="1452" height="1818" loading="lazy" alt="Three equivalent views of second-order HLA.">
             <figcaption class="is-size-7">
               Figure: The same second‑order HLA computation can be expressed as a recurrent causal scan, a fully parallel masked tensor attention form, or a chunk‑wise associative scan with a semidirect product over summaries.
             </figcaption>
@@ -506,4 +506,3 @@ o_t = z^T P - q_t^T(G^(1)+G^(2)+G^(3))
 
 </body>
 </html>
-
